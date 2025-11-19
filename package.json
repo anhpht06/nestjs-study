@@ -1,8 +1,8 @@
 {
-  "name": "project-name",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "name": "nestjs-study",
+  "version": "0.1.0",
+  "description": "A learning project for building backend applications using NestJS. Includes setup, configuration, authentication, validation, and best practices.",
+  "author": "Tuan Anh tuanpht06@gmail.com",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
