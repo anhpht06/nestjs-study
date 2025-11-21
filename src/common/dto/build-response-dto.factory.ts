@@ -1,18 +1,19 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from '@nestjs/common';
 import { ResponseBase } from './response-base.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
-export const buildResponseDto = <TModel extends Type<any>>(model: TModel) => {
-  class ResponseDto extends ResponseBase<InstanceType<TModel>> {
-    @ApiProperty()
-    declare status: number;
+export function createResponseDto<T extends Type<any>>(model: T) {
+  const modelName = model.name; // "SignInResponse"
+  const wrapperName = `${modelName}Dto`; // => "SignInResponseDto"
 
-    @ApiProperty()
-    declare message: string;
-
+  class DynamicResponseDto extends ResponseBase<InstanceType<T>> {
     @ApiProperty({ type: model })
-    declare data: InstanceType<TModel>;
+    declare data: InstanceType<T>;
   }
 
-  return ResponseDto;
-};
+  Object.defineProperty(DynamicResponseDto, 'name', {
+    value: wrapperName,
+  });
+
+  return DynamicResponseDto;
+}

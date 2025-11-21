@@ -7,8 +7,8 @@ import { AuthService } from './auth.service';
 import { CONTROLLER_PREFIX } from 'src/common/constant';
 import { SignInDto, SignInResponse } from './dto/sign-in.dto';
 import { ResponseBase } from 'src/common/dto/response-base.dto';
-import { ApiResponse, PartialType } from '@nestjs/swagger';
-import { buildResponseDto } from 'src/common/dto/build-response-dto.factory';
+import { ApiResponse } from '@nestjs/swagger';
+import { createResponseDto } from 'src/common/dto/build-response-dto.factory';
 
 @Controller(CONTROLLER_PREFIX.AUTH)
 export class AuthController {
@@ -16,7 +16,7 @@ export class AuthController {
 
   @ApiResponse({
     status: 200,
-    type: PartialType(buildResponseDto(SignInResponse)),
+    type: createResponseDto(SignInResponse),
     description: 'Sign in',
   })
   @HttpCode(200)
