@@ -1,35 +1,55 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
+import './loadenv';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import chalk from 'chalk';
+import {
+  GLOBAL_API_PREFIX,
+  GLOBAL_SWAGGER_PREFIX,
+  SWAGGER_DESC,
+  SWAGGER_VERSION,
+} from './common/constant';
+import { ConfigService } from '@nestjs/config';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const port = process.env.PORT ?? 3000;
-  const globalPrefix = 'api/v1';
-  const globalSwaggerPrefix = 'api/docs';
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix(globalPrefix);
+
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('app.port') ?? 3000;
+
+  app.setGlobalPrefix(GLOBAL_API_PREFIX);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   // Swagger config
   const config = new DocumentBuilder()
-    .setTitle('NestJS Study API')
-    .setDescription('The API documentation for NestJS study project')
-    .setVersion('1.0')
+    .setDescription(SWAGGER_DESC)
+    .setVersion(SWAGGER_VERSION)
     .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(globalSwaggerPrefix, app, document);
+  SwaggerModule.setup(GLOBAL_SWAGGER_PREFIX, app, document);
 
   await app.listen(port);
 
   console.log(
     chalk.blue('🔗 API: ') +
-      chalk.bold(`http://localhost:3000/${globalPrefix}`),
+      chalk.bold(`http://localhost:${port}/${GLOBAL_API_PREFIX}`),
   );
   console.log(
     chalk.blue('📚 Swagger: ') +
-      chalk.bold(`http://localhost:3000/${globalSwaggerPrefix}`),
+      chalk.bold(`http://localhost:${port}/${GLOBAL_SWAGGER_PREFIX}`),
   );
 }
-bootstrap();
+void bootstrap();
