@@ -1,22 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ResponseBase } from 'src/common/dto/response-base.dto';
 import { CreateUserDto, CreateUserResponse } from './dto/create-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserEntity } from './entities/user.entity';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
-  createUser(createUserDto: CreateUserDto): ResponseBase<CreateUserResponse> {
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
+  ) {}
+  async createUser(
+    createUserDto: CreateUserDto,
+  ): Promise<ResponseBase<CreateUserResponse>> {
     const { username, password } = createUserDto;
-    return {
-      status: 201,
-      message: 'Tạo user thành công',
-      data: {
+    try {
+      const user = this.userRepo.create({
         username: username,
-      },
-    };
+        password: password,
+      });
+      await this.userRepo.save(user);
+      return {
+        status: 201,
+        message: 'Tạo user thành công',
+        data: user,
+      };
+    } catch (error) {
+      throw new NotFoundException(error);
+    }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async getAllUser(): Promise<ResponseBase<UserDto[]>> {
+    try {
+      const user = await this.userRepo.find();
+
+      return {
+        status: 200,
+        message: 'Lay thong tin thanh cong',
+        data: user,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   findOne(id: number) {

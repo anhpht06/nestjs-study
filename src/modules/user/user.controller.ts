@@ -2,12 +2,13 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CreateUserDto, CreateUserResponse } from './dto/create-user.dto';
 import { ResponseBase } from 'src/common/dto/response-base.dto';
 import { ApiResponse, PartialType } from '@nestjs/swagger';
 import { createResponseDto } from 'src/common/dto/build-response-dto.factory';
 import { UserService } from './user.service';
+import { UserDto } from './dto/user.dto';
 
 @Controller('user')
 export class UserController {
@@ -21,7 +22,17 @@ export class UserController {
   @Post('create')
   create(
     @Body() createUserDto: CreateUserDto,
-  ): ResponseBase<CreateUserResponse> {
+  ): Promise<ResponseBase<CreateUserResponse>> {
     return this.userService.createUser(createUserDto);
+  }
+
+  @ApiResponse({
+    status: 200,
+    type: createResponseDto(UserDto, { isArray: true }),
+    description: 'Get All User',
+  })
+  @Get('get-all-user')
+  async getAllUser(): Promise<ResponseBase<UserDto[]>> {
+    return await this.userService.getAllUser();
   }
 }
